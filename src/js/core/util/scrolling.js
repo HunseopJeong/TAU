@@ -393,6 +393,11 @@
 
 				previousIndex = currentIndex;
 
+				if (isTouch) {
+					lastScrollPosition = 0;
+					isTouch = false;
+				}
+
 				// update position by snapSize
 				if (eventDirection === "CW") {
 					currentIndex++;
@@ -577,6 +582,8 @@
 				} else {
 					// detect direction
 					direction = (setDirection === "x") ? 1 : 0;
+
+					currentIndex = 0;
 
 					existingContainerElement = element.querySelector("div." + classes.container);
 					if (existingContainerElement) {
@@ -899,7 +906,10 @@
 				isElement: isElement,
 				setBounceBack: function (setBounceBack) {
 					bounceBack = setBounceBack;
-				}
+				},
+				// setCurrentIndex: function (index) {
+				// 	currentIndex = index;
+				// }
 			};
 
 			//>>excludeStart("tauBuildExclude", pragmas.tauBuildExclude);
