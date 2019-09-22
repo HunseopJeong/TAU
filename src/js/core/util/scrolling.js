@@ -385,10 +385,26 @@
 			}
 
 			/**
+			 * Check visible state of the element
+			 * @param {Element} elm 
+			 */
+			function _isVisible(elm) {
+				const style = getComputedStyle(elm);
+				if (style.display === 'none') return false;
+				if (style.visibility !== 'visible') return false;
+
+				return true;
+			}
+
+			/**
 			 * Handler for rotary event
 			 * @param {Event} event
 			 */
 			function rotary(event) {
+				if (scrollingElement && !_isVisible(scrollingElement)) {
+					return;
+				}
+
 				var eventDirection = event.detail && event.detail.direction;
 
 				previousIndex = currentIndex;
