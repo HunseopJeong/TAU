@@ -55,17 +55,22 @@
 			// widget list
 			// core widgets
 			"./core/widget/core/PageContainer",
+			//>>excludeStart("tauCore", pragmas.tauCore)
 			"./core/widget/core/Button",
 			"./core/widget/core/Checkbox",
 			"./core/widget/core/Radio",
 			"./core/widget/core/Marquee",
 			"./core/widget/core/viewswitcher/ViewSwitcher",
 			"./core/widget/core/PageIndicator",
+			//>>excludeEnd("tauCore");
 			"./core/widget/core/scroller/Scroller",
 			"./core/widget/core/scroller/scrollbar/ScrollBar",
+			//>>excludeStart("tauCore", pragmas.tauCore)
 			"./core/widget/core/SectionChanger",
 			"./core/widget/core/VirtualListviewSimple",
+			//>>excludeEnd("tauCore");
 			"./core/widget/core/Page",
+			//>>excludeStart("tauCore", pragmas.tauCore)
 			"./core/widget/core/Interactive3D",
 			"./core/widget/core/CoverFlow",
 			"./core/widget/core/Dimmer",
@@ -100,6 +105,7 @@
 			"./profile/wearable/helper/SnapListMarqueeStyle",
 			"./profile/wearable/helper/DrawerMoreStyle",
 			"./profile/wearable/helper/RotaryEventBinder",
+			//>>excludeEnd("tauCore");
 			// extended routes
 			"./profile/wearable/router/route/circularindexscrollbar",
 			"./profile/wearable/router/route/grid",

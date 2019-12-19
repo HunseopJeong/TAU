@@ -30,6 +30,7 @@ var path = require("path"),
 module.exports = function (grunt) {
 	var pkg = grunt.file.readJSON("package.json"),
 		themes = grunt.file.readJSON("themes.json"),
+		components = grunt.file.readJSON("components.json"),
 		name = pkg.name,
 		version = pkg.version,
 		themeVersion = ["default", "changeable"],
@@ -128,10 +129,12 @@ module.exports = function (grunt) {
 						src,
 						pushLicenseFile = function (ext) {
 							src = path.join(buildDir[device].js, name) + ext;
-							licenseFiles.push({
-								src: [path.join("license", "Flora") + ".txt", src],
-								dest: src
-							});
+							if (grunt.file.exists(src)) {
+								licenseFiles.push({
+									src: [path.join("license", "Flora") + ".txt", src],
+									dest: src
+								});
+							}
 						};
 
 					for (device in buildDir) {
@@ -463,6 +466,30 @@ module.exports = function (grunt) {
 							tauPerformance: !tauPerformance,
 							tauMVC: false,
 							tauUI: false
+						},
+						pragmasOnSave: {
+							tauBuildExclude: true,
+							tauDebug: !tauDebug
+						},
+						wrap: {
+							start: wrapStart,
+							end: wrapEnd
+						}
+					}
+				},
+				wearableCore: {
+					options: {
+						baseUrl: srcJs,
+						optimize: "none",
+						findNestedDependencies: true,
+						skipModuleInsertion: true,
+						name: "wearable",
+						out: path.join(buildDir.wearable.js, name) + ".core.js",
+						pragmas: {
+							tauPerformance: !tauPerformance,
+							tauMVC: true,
+							tauUI: false,
+							tauCore: true
 						},
 						pragmasOnSave: {
 							tauBuildExclude: true,
@@ -1468,6 +1495,59 @@ module.exports = function (grunt) {
 		}
 	})();
 
+	// add requirejs tasks to build components.
+	(function () {
+		var requirejs = initConfig.requirejs,
+			profileName;
+
+		function defineRequireForComponents(component) {
+			if (grunt.file.exists(path.join(srcJs, component.src) + ".js")) {
+				requirejs["componentjs_" + profileName + "_" + component.name] = {
+					options: {
+						baseUrl: srcJs,
+						optimize: "none",
+						findNestedDependencies: true,
+						skipModuleInsertion: true,
+						name: component.src,
+						out: path.join(buildDir[profileName].js, "components", component.name) + ".js",
+						pragmas: {
+							tauPerformance: !tauPerformance,
+							tauMVC: true,
+							tauUI: false,
+							tauCore: true
+						},
+						pragmasOnSave: {
+							tauBuildExclude: true,
+							tauDebug: !tauDebug
+						},
+						wrap: {
+							start: "(function(window, document, undefined) {\n",
+							end: "}(window, window.document));\n"
+						}
+					}
+				}
+			}
+		}
+
+		for (profileName in components["device"]) {
+			if (components["device"].hasOwnProperty(profileName)) {
+				components["device"][profileName].forEach(defineRequireForComponents);
+			}
+		}
+	})();
+
+	function componentjs(profile) {
+		var task;
+
+		profile = profile || "";
+
+		for (task in initConfig.requirejs) {
+			if (initConfig.requirejs.hasOwnProperty(task) && task.indexOf("componentjs_" + profile) !== -1) {
+				grunt.task.run("requirejs:" + task);
+			}
+		}
+	}
+
 	function themesjs(profile) {
 		var task;
 
@@ -1558,6 +1638,7 @@ module.exports = function (grunt) {
 
 	// Task list
 	grunt.registerTask("themesjs", "Generate themes files using requirejs", themesjs);  // Generate separate themes files
+	grunt.registerTask("componentjs", "Generate components files using requirejs", componentjs);  // Generate separate components files
 	grunt.registerTask("lint", "Validate code", [
 		"eslint:js"
 		/*"eslint:jsdoc" jsdoc issues are reported only into CI process, enable this task after fix all jsdoc issues*/
@@ -1662,6 +1743,7 @@ module.exports = function (grunt) {
 	grunt.registerTask("js-mobile", "Prepare JS for mobile", ["clean:js", "requirejs:mobile", "jsmin", "themesjs:mobile", "copy:mobileJquery"]); //"bundle:mobile"
 	grunt.registerTask("js-mobile_support", "Prepare JS for mobile 2.3", ["clean:js", "requirejs:mobile", "requirejs:mobile_support", "jsmin", "themesjs:mobile", "copy:mobileJquery"]);
 	grunt.registerTask("js-wearable", "Prepare JS wearable", ["clean:js", "requirejs:wearable", "jsmin", "themesjs:wearable", "copy:wearableJquery"]); //"bundle:wearable"
+	grunt.registerTask("js-wearable-module", "Prepare JS wearable for modularization", ["clean:js", "requirejs:wearableCore", "componentjs:wearable", "jsmin", "themesjs:wearable", "copy:wearableJquery"]); //"bundle:wearable"
 	grunt.registerTask("js-tv", "Prepare JS tv", ["clean:js", "requirejs:tv", "jsmin", "themesjs:tv", "copy:tvJquery"]); //"bundle:tv"
 	grunt.registerTask("license", "Add licence information to files", ["concat:licenseJs", "concat:licenseDefaultCss", "concat:licenseChangeableCss", "concat:licenseWearableCss", "copy:license"]);
 
@@ -1694,6 +1776,7 @@ module.exports = function (grunt) {
 	]);
 
 	grunt.registerTask("build-wearable", "Build wearable project", ["css-wearable", "js-wearable", "license", "version"]);
+	grunt.registerTask("build-wearable-module", "Build wearable project with modularization", ["css-wearable", "js-wearable-module", "license", "version"]);
 
 	grunt.registerTask("release", "Build, est and prepare docs", ["lint", "build", "test:mobile", "test:mobile_support", "test:jqm", "test:jqm14ok", "test:wearable"]);
 

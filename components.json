@@ -1,0 +1,173 @@
+{
+	"device": {
+
+		"mobile": [
+		],
+
+		"wearable": [
+			{
+				"name": "Button",
+				"src": "./core/widget/core/Button"
+			},
+			{
+				"name": "Checkbox",
+				"src": "./core/widget/core/Checkbox"
+			},
+			{
+				"name": "Radio",
+				"src": "./core/widget/core/Radio"
+			},
+			{
+				"name": "Marquee",
+				"src": "./core/widget/core/Marquee"
+			},
+			{
+				"name": "ViewSwitcher",
+				"src": "./core/widget/core/viewswitcher/ViewSwitcher"
+			},
+			{
+				"name": "PageIndicator",
+				"src": "./core/widget/core/PageIndicator"
+			},
+			{
+				"name": "SectionChanger",
+				"src": "./core/widget/core/SectionChanger"
+			},
+			{
+				"name": "VirtualListviewSimple",
+				"src": "./core/widget/core/VirtualListviewSimple"
+			},
+			{
+				"name": "Interactive3D",
+				"src": "./core/widget/core/Interactive3D"
+			},
+			{
+				"name": "CoverFlow",
+				"src": "./core/widget/core/CoverFlow"
+			},
+			{
+				"name": "Dimmer",
+				"src": "./core/widget/core/Dimmer"
+			},
+			{
+				"name": "Graph",
+				"src": "./core/widget/core/Graph"
+			},
+			{
+				"name": "Scrollview",
+				"src": "./profile/wearable/widget/wearable/Scrollview"
+			},
+			{
+				"name": "Popup",
+				"src": "./profile/wearable/widget/wearable/Popup"
+			},
+			{
+				"name": "Drawer",
+				"src": "./profile/wearable/widget/wearable/Drawer"
+			},
+			{
+				"name": "Slider",
+				"src": "./profile/wearable/widget/wearable/Slider"
+			},
+			{
+				"name": "CircleProgressBar",
+				"src": "./profile/wearable/widget/wearable/CircleProgressBar"
+			},
+			{
+				"name": "Listview",
+				"src": "./profile/wearable/widget/wearable/Listview"
+			},
+			{
+				"name": "IndexScrollbar",
+				"src": "./profile/wearable/widget/wearable/IndexScrollbar"
+			},
+			{
+				"name": "CircularIndexScrollbar",
+				"src": "./profile/wearable/widget/wearable/CircularIndexScrollbar"
+			},
+			{
+				"name": "Progress",
+				"src": "./profile/wearable/widget/wearable/Progress"
+			},
+			{
+				"name": "Progressing",
+				"src": "./profile/wearable/widget/wearable/Progressing"
+			},
+			{
+				"name": "ToggleSwitch",
+				"src": "./profile/wearable/widget/wearable/ToggleSwitch"
+			},
+			{
+				"name": "VirtualListview",
+				"src": "./profile/wearable/widget/wearable/VirtualListview"
+			},
+			{
+				"name": "VirtualGrid",
+				"src": "./profile/wearable/widget/wearable/VirtualGrid"
+			},
+			{
+				"name": "SnapListview",
+				"src": "./profile/wearable/widget/wearable/SnapListview"
+			},
+			{
+				"name": "SwipeList",
+				"src": "./profile/wearable/widget/wearable/SwipeList"
+			},
+			{
+				"name": "Selector",
+				"src": "./profile/wearable/widget/wearable/Selector"
+			},
+			{
+				"name": "Grid",
+				"src": "./profile/wearable/widget/wearable/Grid"
+			},
+			{
+				"name": "NumberPicker",
+				"src": "./profile/wearable/widget/wearable/NumberPicker"
+			},
+			{
+				"name": "TimePicker",
+				"src": "./profile/wearable/widget/wearable/TimePicker"
+			},
+			{
+				"name": "ArcListview",
+				"src": "./profile/wearable/widget/wearable/ArcListview"
+			},
+			{
+				"name": "ColorPicker",
+				"src": "./profile/wearable/widget/wearable/ColorPicker"
+			},
+			{
+				"name": "DatePicker",
+				"src": "./profile/wearable/widget/wearable/DatePicker"
+			},
+			{
+				"name": "TextInput",
+				"src": "./profile/wearable/widget/wearable/TextInput"
+			},
+			{
+				"name": "Spin",
+				"src": "./profile/wearable/widget/wearable/Spin"
+			},
+			{
+				"name": "SnapListStyle",
+				"src": "./profile/wearable/helper/SnapListStyle"
+			},
+			{
+				"name": "SnapListMarqueeStyle",
+				"src": "./profile/wearable/helper/SnapListMarqueeStyle"
+			},
+			{
+				"name": "DrawerMoreStyle",
+				"src": "./profile/wearable/helper/DrawerMoreStyle"
+			},
+			{
+				"name": "RotaryEventBinder",
+				"src": "./profile/wearable/helper/RotaryEventBinder"
+			}
+		],
+
+		"tv": [
+		]
+	}
+}
