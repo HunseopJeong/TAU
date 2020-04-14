@@ -51,6 +51,7 @@
 			"../../../core/engine",
 			"../../../core/event",
 			"../../../core/event/gesture",
+			"../../../core/util/selectors",
 			"./BaseWidgetMobile",
 			"./Spin"
 		],
@@ -58,13 +59,20 @@
 			//>>excludeEnd("tauBuildExclude");
 			var BaseWidget = ns.widget.mobile.BaseWidgetMobile,
 				engine = ns.engine,
+				utilsEvents = ns.event,
+				getClosestByClass = ns.util.selectors.getClosestByClass,
 				Spin = ns.widget.mobile.Spin,
 				WIDGET_CLASS = "ui-time-picker",
 				classes = {
 					CONTAINER: WIDGET_CLASS + "-container",
 					HOUR_CONTAINER: WIDGET_CLASS + "-container-hour",
 					MINUTE_CONTAINER: WIDGET_CLASS + "-container-minute",
-					FORMAT_CONTAINER: WIDGET_CLASS + "-container-format"
+					FORMAT_CONTAINER: WIDGET_CLASS + "-container-format",
+					ACTIVE_CONTAINER: WIDGET_CLASS + "-container-active",
+					TIME_INPUT: WIDGET_CLASS + "-input",
+					TIME_INPUT_ACTIVE: WIDGET_CLASS + "-input-active",
+					SPIN_SELECTED: "ui-spin-item-selected",
+					SPIN_ACTIVE: "ui-spin-active"
 				},
 				WIDGET_SELECTOR = "." + WIDGET_CLASS,
 				TimePicker = function () {
@@ -77,6 +85,11 @@
 						minute: null,
 						format: null
 					};
+
+					this._ui = {};
+					this._previousInputValue = -1;
+					// Variable to check the current input state false: first, true: second
+					this._inputValueState = false;
 				},
 				prototype = new BaseWidget();
 
@@ -135,7 +148,9 @@
 			*/
 			prototype._buildTimePicker = function (name) {
 				var self = this,
+					ui = self._ui,
 					spin = document.createElement("div"),
+					spinInput = document.createElement("input"),
 					spinContainer = document.createElement("div"),
 					options = {},
 					spinWidget;
@@ -146,19 +161,30 @@
 				if (name === "hour") {
 					if (self.options.format === "24") {
 						options.min = 0;
-						options.max = 24;
+						options.max = 23;
 					} else {
-						options.min = 0;
+						options.min = 1;
 						options.max = 12;
 					}
 					spinContainer.classList.add(TimePicker.classes.HOUR_CONTAINER);
 				} else if (name === "minute") {
 					options.min = 0;
-					options.max = 60;
+					options.max = 59;
 					spinContainer.classList.add(TimePicker.classes.MINUTE_CONTAINER);
 				}
 
+				spinInput.min = options.min;
+				spinInput.max = options.max;
+				spinInput.type = "number";
+				spinInput.step = "1";
+				spinInput.classList.add(classes.TIME_INPUT);
+
+				spin.appendChild(spinInput);
 				spinContainer.appendChild(spin);
+
+				ui[name + "Spin"] = spin;
+				ui[name + "Input"] = spinInput;
+				ui[name + "Container"] = spinContainer;
 
 				spinWidget = ns.widget.Spin(spin, options);
 				self._spins[name] = spinWidget;
@@ -205,6 +231,7 @@
 			*/
 			prototype._setDateValue = function (value) {
 				var self = this,
+					ui = self._ui,
 					spins = self._spins,
 					hours,
 					minutes;
@@ -221,9 +248,79 @@
 					}
 				}
 
+				ui.hourInput.setAttribute("value", hours);
+				ui.hourInput.value = hours;
+				ui.minuteInput.setAttribute("value", minutes);
+				ui.minuteInput.value = minutes;
+
 				spins.hour.value(hours);
 				spins.minute.value(minutes);
 			};
+
+			/**
+			* Set the value for the input element
+			* @method _setInputValue
+			* @param {string} name
+			* @param {number} value
+			* @param {boolean} state
+			* @member ns.widget.mobile.TimePicker
+			* @protected
+			*/
+			prototype._setInputValue = function (name, value, state) {
+				var self = this,
+					ui = self._ui,
+					spins = self._spins;
+				
+				if (name === "hour") {
+					ui.hourInput.setAttribute("value", value);
+					ui.hourInput.value = value;
+					spins.hour.value(value);
+				} else if (name === "minute") {
+					ui.minuteInput.setAttribute("value", value);
+					ui.minuteInput.value = value;
+					spins.minute.value(value);
+				}
+
+				self._previousInputValue = value;
+				self._inputValueState = state;
+			}
+
+			/**
+			* Focus input element
+			* @method _focusInput
+			* @param {string} name
+			* @member ns.widget.mobile.TimePicker
+			* @protected
+			*/
+			prototype._focusInput = function (name) {
+				var self = this,
+					ui = self._ui;
+				
+				if (name === "hour") {
+					self.element.classList.add(classes.TIME_INPUT_ACTIVE);
+					ui.hourContainer.classList.add(classes.ACTIVE_CONTAINER);
+					ui.minuteContainer.classList.remove(classes.ACTIVE_CONTAINER);
+					ui.hourInput.focus();
+					self._previousInputValue = ui.hourInput.value;
+				} else if (name === "minute") {
+					self.element.classList.add(classes.TIME_INPUT_ACTIVE);
+					ui.minuteContainer.classList.add(classes.ACTIVE_CONTAINER);
+					ui.hourContainer.classList.remove(classes.ACTIVE_CONTAINER);
+					ui.minuteInput.focus();
+					self._previousInputValue = ui.minuteInput.value;
+				}
+
+				self._inputValueState = false;
+			}
+
+			// Get a new added value
+			function diffValue (origin, change) {
+				var diff = change.split(origin).join('');
+				if (diff.length === 0) {
+					return origin;
+				}
+				return diff;
+			}
 
 			/**
 			* Set the value of TimePicker
@@ -233,10 +330,53 @@
 			* @protected
 			*/
 			prototype._setValue = function (value) {
-				var self = this;
+				var self = this,
+					ui = self._ui,
+					options = self.options,
+					activeContainer,
+					visibleValue;
 
 				if (value instanceof Date) {
 					self._setDateValue(value);
+				} else {
+					activeContainer = document.querySelector("." + classes.ACTIVE_CONTAINER);
+					if (activeContainer && activeContainer.classList.contains(classes.HOUR_CONTAINER)) {
+						// First input value
+						if (!self._inputValueState) {
+							visibleValue = parseInt(diffValue(self._previousInputValue, value), 10);
+							self._setInputValue("hour", visibleValue, true);
+
+							if ((options.format === "12" && visibleValue > 1) || (options.format === "24" && visibleValue > 2)) {
+								self._focusInput("minute");
+							}
+						} else {
+							visibleValue = parseInt(value, 10);
+
+							if (visibleValue > ui.hourInput.max || visibleValue < ui.hourInput.min) {
+								// TODO: Show toast error message
+								self._setInputValue("hour", self._previousInputValue, true);
+								return;
+							}
+
+							self._setInputValue("hour", visibleValue, false);
+							self._focusInput("minute");
+						}
+					} else if (activeContainer && activeContainer.classList.contains(classes.MINUTE_CONTAINER)) {
+						if (!self._inputValueState) {
+							visibleValue = parseInt(diffValue(self._previousInputValue, value), 10);
+							self._setInputValue("minute", visibleValue, true);
+						} else {
+							visibleValue = parseInt(value, 10);
+
+							if (visibleValue > ui.minuteInput.max || visibleValue < ui.minuteInput.min) {
+								// TODO: Show toast error message
+								self._setInputValue("minute", self._previousInputValue, false);
+								return;
+							}
+
+							self._setInputValue("minute", visibleValue, false);
+						}
+					}
 				}
 			};
 
@@ -261,7 +401,83 @@
 				time.setMinutes(parseInt(spins.minute.value(), 10));
 
 				return time;
-			}
+			};
+
+			prototype._onClick = function (event) {
+				var self = this,
+					ui = self._ui,
+					element = self.element,
+					eventTargetElement = event.target,
+					hourContainer = ui.hourContainer,
+					minuteContainer = ui.minuteContainer,
+					parentContainer = getClosestByClass(eventTargetElement, classes.CONTAINER);
+
+				if (parentContainer && parentContainer.classList.contains(classes.HOUR_CONTAINER)
+					&& getClosestByClass(eventTargetElement, classes.SPIN_SELECTED)) {
+					self._focusInput("hour");
+				} else if (parentContainer && parentContainer.classList.contains(classes.MINUTE_CONTAINER)
+					&& getClosestByClass(eventTargetElement, classes.SPIN_SELECTED)) {
+					self._focusInput("minute");
+				} else {
+					element.classList.remove(classes.TIME_INPUT_ACTIVE);
+					minuteContainer.classList.remove(classes.ACTIVE_CONTAINER);
+					hourContainer.classList.remove(classes.ACTIVE_CONTAINER);
+				}
+			};
+
+			prototype._onInputChange = function (event) {
+				var self = this;
+
+				if (getClosestByClass(event.target, classes.CONTAINER)) {
+					self.value(event.target.value);
+				}
+			};
+
+			prototype._onSpinChange = function (event) {
+				var self = this;
+				
+				if (getClosestByClass(event.target, classes.CONTAINER)) {
+					self.value(event.detail.value);
+				}
+			};
+
+			prototype.handleEvent = function (event) {
+				var self = this;
+
+				switch (event.type) {
+					case "click":
+						self._onClick(event);
+						break;
+					case "input":
+						self._onInputChange(event);
+						break;
+					case "spinchange":
+						self._onSpinChange(event);
+						break;
+				}
+			};
+
+			prototype._bindEvents = function () {
+				var self = this,
+					ui = self._ui;
+
+				utilsEvents.on(document, "click", self);
+				utilsEvents.on(ui.hourInput, "input", self);
+				utilsEvents.on(ui.minuteInput, "input", self);
+				utilsEvents.on(ui.hourSpin, "spinchange", self);
+				utilsEvents.on(ui.minuteSpin, "spinchange", self);
+			};
+
+			prototype._unbindEvents = function () {
+				var self = this,
+					ui = self._ui;
+
+				utilsEvents.off(document, "click", self);
+				utilsEvents.off(ui.hourInput, "input", self);
+				utilsEvents.off(ui.minuteInput, "input", self);
+				utilsEvents.off(ui.hourSpin, "spinchange", self);
+				utilsEvents.off(ui.minuteSpin, "spinchange", self);
+			};
 
 			/**
 			* Destory TimePicker widget
