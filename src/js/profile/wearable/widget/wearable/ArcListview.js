@@ -80,7 +80,9 @@
 				FOCUSED_TITLE_WIDTH = 340,
 				NORMAL_TITLE_FONT_SIZE = 30,
 				FOCUSED_TITLE_FONT_SIZE = 40,
-
+				scrollBarType = {
+					CIRCLE: "tizen-circular-scrollbar"
+				},
 				/**
 				 * Alias for class {@link ns.engine}
 				 * @property {Object} engine
@@ -256,6 +258,7 @@
 				},
 				selectors = {
 					PAGE: "." + Page.classes.uiPage,
+					CONTENT: ".ui-content",
 					POPUP: ".ui-popup",
 					SCROLLER: ".ui-scroller",
 					ITEMS: "." + WIDGET_CLASS + " > li",
@@ -2009,6 +2012,39 @@
 
 				eventUtils.trigger(page, visibility === "show" ? "showGoToTopButton" : "hideGoToTopButton");
 			};
+
+			/**
+			 * Set 
+			 * @param {boolean} value
+			 * @method _setCircularScrollbar
+			 * @memberof ns.widget.wearable.ArcListview
+			 * @protected
+			 */
+			prototype._setCircularScrollbar = function(value) {
+				var self = this,
+					ui = self._ui,
+					scroller = ui.scroller,
+					content;
+
+				if (ns.support.shape.circle) {
+					if (scroller) {
+						if (value) {
+							scroller.setAttribute(scrollBarType.CIRCLE, "");
+						} else {
+							scroller.removeAttribute(scrollBarType.CIRCLE);
+						}
+
+						content = scroller.querySelector(selectors.CONTENT);
+						if (content) {
+							if (value) {
+								content.setAttribute(scrollBarType.CIRCLE, "");
+							} else {
+								content.removeAttribute(scrollBarType.CIRCLE);
+							}
+						}	
+					}
+				}
+			}
 
 			ArcListview.prototype = prototype;
 			ns.widget.wearable.ArcListview = ArcListview;
